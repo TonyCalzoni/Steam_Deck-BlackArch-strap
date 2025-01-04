@@ -1,7 +1,7 @@
 #!/usr/bin/env xdg-open
 [Desktop Entry]
 Name=Steam Deck BlackArch Install Tool
-Exec=sh -c 'rm -f /tmp/strapper.sh; if curl -S -s -L -O --output-dir /tmp/ --connect-timeout 60 https://github.com/TonyCalzoni/Steam_Deck-BlackArch-strap/raw/refs/heads/main/strapper.sh; then bash /tmp/strapper.sh; else echo "Something went wrong, please report this if it is a bug"; read; fi'
+Exec=sh -c 'rm -f /tmp/strapper.sh; if curl -S -s -L -O --output-dir /tmp/ --connect-timeout 60 https://github.com/TonyCalzoni/Steam_Deck-BlackArch-strap/raw/refs/heads/main/strapper.sh; then chmod +x /tmp/strapper.sh && bash /tmp/strapper.sh; else echo "Something went wrong, please report this if it is a bug"; read; fi'
 Icon=steamdeck-gaming-return
 Terminal=true
 Type=Application
