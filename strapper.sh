@@ -4,6 +4,53 @@
 USER_DIR="$(getent passwd $SUDO_USER | cut -d: -f6)"
 HOMEBREW_FOLDER="${USER_DIR}/homebrew"
 
+elevated_exec() {
+  echo "$PASS" | sudo -E -S -k "$1"
+}
+
+### Grafted from blackarch's strap.sh
+# add necessary GPG options
+add_gpg_opts()
+{
+  # tmp fix for SHA-1 + >= gpg-2.4 versions
+  if ! elevated_exec "grep -q 'allow-weak-key-signatures' $GPG_CONF"
+  then
+    elevated_exec "echo 'allow-weak-key-signatures' >> $GPG_CONF"
+  fi
+
+  return $SUCCESS
+}
+
+### Grafted from blackarch's strap.sh
+# retrieve the BlackArch Linux keyring
+fetch_keyring()
+{
+  elevated_exec "curl -s -O 'https://www.blackarch.org/keyring/blackarch-keyring.pkg.tar.zst'"
+
+  elevated_exec "curl -s -O 'https://www.blackarch.org/keyring/blackarch-keyring.pkg.tar.zst.sig'"
+}
+
+### Grafted from blackarch's strap.sh
+# delete the signature files
+delete_signature()
+{
+  if [ -f "blackarch-keyring.pkg.tar.zst.sig" ]; then
+    elevated_exec "rm blackarch-keyring.pkg.tar.zst.sig"
+  fi
+}
+
+### Grafted from blackarch's strap.sh
+# install the keyring
+install_keyring()
+{
+  if ! elevated_exec "pacman --config /dev/null --noconfirm -U blackarch-keyring.pkg.tar.zst" ; then
+      echo 'keyring installation failed'
+  fi
+
+  # just in case
+  elevated_exec "pacman-key --populate"
+}
+
 check_is_deck() {
   UNAME="$(uname -a)"
   if [[ $UNAME =~ "neptune" ]] || [[ $UNAME =~ "jupiter" ]]; then
@@ -16,26 +63,29 @@ check_is_deck() {
 }
 
 disable_readonly_fs() {
-  echo "$PASS" | sudo -E -S -k "steamos-readonly disable"
+  elevated_exec "steamos-readonly disable"
 }
 
 enable_readonly_fs() {
-  echo "$PASS" | sudo -E -S -k "steamos-readonly enable"
+  elevated_exec "steamos-readonly enable"
 }
 
 init_pacman() {
-  echo "$PASS" | sudo -E -S -k "sudo pacman-key --init"
-  echo "$PASS" | sudo -E -S -k "pacman-key --populate archlinux"
+  elevated_exec "sudo pacman-key --init"
+  elevated_exec "pacman-key --populate archlinux"
   if [ $IS_DECK == TRUE ]; then
-    echo "$PASS" | sudo -E -S -k "pacman-key --populate holo"
-    echo "$PASS" | sudo -E -S -k "steamos-devmode enable"
-    echo "$PASS" | sudo -E -S -k "steamos-unminimize"
+    elevated_exec "pacman-key --populate holo"
+    elevated_exec "steamos-devmode enable"
+    elevated_exec "steamos-unminimize"
   fi
-  echo "$PASS" | sudo -E -S -k "pacman --sync --noconfirm glibc linux-api-headers"
+  elevated_exec "pacman --sync --noconfirm glibc linux-api-headers"
 }
 
 blackarch_strap() {
-  echo "Not yet implemented"
+  add_gpg_opts
+  fetch_keyring
+  delete_signature
+  install_keyring
 }
 
 # if a password was set by decky, this will run when the program closes
