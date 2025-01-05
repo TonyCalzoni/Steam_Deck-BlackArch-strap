@@ -6,7 +6,7 @@ HOMEBREW_FOLDER="${USER_DIR}/homebrew"
 
 check_is_deck() {
   UNAME="$(uname -o)"
-  if [[ $UNAME =~ "holo" ]]; then
+  if [[ $UNAME =~ "Holo" ]]; then
     echo "Running on Steam Deck"
     IS_DECK=TRUE
   else
