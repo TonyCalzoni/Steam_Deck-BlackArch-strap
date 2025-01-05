@@ -1,11 +1,19 @@
 #!/bin/bash
-#TODO: Differentiate holo and neptune
-#TODO: Add conditions to not execute SteamOS scripts on non-deck platforms
 
 
 USER_DIR="$(getent passwd $SUDO_USER | cut -d: -f6)"
 HOMEBREW_FOLDER="${USER_DIR}/homebrew"
 
+check_is_deck() {
+  UNAME="$(uname -o)"
+  if [[ $UNAME =~ "holo" ]]; then
+    echo "Running on Steam Deck"
+    IS_DECK=TRUE
+  else
+    echo "Not running on a Steam Deck"
+    IS_DECK=FALSE
+  fi
+}
 
 disable_readonly_fs() {
   sudo steamos-readonly disable
@@ -18,9 +26,11 @@ enable_readonly_fs() {
 init_pacman() {
   sudo pacman-key --init
   sudo pacman-key --populate archlinux
-  sudo pacman-key --populate holo
-  sudo steamos-devmode enable
-  sudo steamos-unminimize
+  if [ $IS_DECK == TRUE ]; then
+    sudo pacman-key --populate holo
+    sudo steamos-devmode enable
+    sudo steamos-unminimize
+  fi
   sudo pacman --sync --noconfirm glibc linux-api-headers
 }
 
@@ -54,12 +64,6 @@ check_online() {
   then
     echo "Github appears to be unreachable, you may not be connected to the internet"
     exit 1
-  fi
-}
-
-check_if_deck_user() {
-  if ! [ $USER = "deck" ]; then
-    zen_nospam --title="BlackArch Strapper" --width=300 --height=100 --warning --text "You appear to not be on a deck.\nThis should still mostly work, but you may not get full functionality."
   fi
 }
 
@@ -108,48 +112,73 @@ present_options() {
 
 main() {
 check_online
-check_if_deck_user
-present_options
+check_jq
+check_is_deck
 #permissions_prompt
+present_options
 case $OPTION in
   "Disable read-only filesystem")
     echo "Disabling read-only fs"
-    disable_readonly_fs
+    if [ $IS_DECK == TRUE ]; then
+      disable_readonly_fs
+    else
+      echo "Not running on a Steam Deck, this likely is pointless and won't be attempted"
+    fi
       ;;
 
   "Strap BlackArch")
     echo "Strapping"
-    disable_readonly_fs
-    init_pacman
+    if [ $IS_DECK == TRUE ]; then
+      disable_readonly_fs
+      init_pacman
+    else
+      echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
+    fi
     blackarch_easy_strap
       ;;
 
   "Strap BlackArch and install brew")
     echo "Strapping+"
-    disable_readonly_fs
-    init_pacman
+    if [ $IS_DECK == TRUE ]; then
+      disable_readonly_fs
+      init_pacman
+    else
+      echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
+    fi
     blackarch_easy_strap
       ;;
 
   "Strap BlackArch, install brew and go")
     echo "Strapping++"
-    disable_readonly_fs
-    init_pacman
+    if [ $IS_DECK == TRUE ]; then
+      disable_readonly_fs
+      init_pacman
+    else
+      echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
+    fi
     blackarch_easy_strap
 
       ;;
 
   "Strap BlackArch; install brew, go, and wifi tools")
     echo "Strapping+++"
-    disable_readonly_fs
-    init_pacman
+    if [ $IS_DECK == TRUE ]; then
+      disable_readonly_fs
+      init_pacman
+    else
+      echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
+    fi
     blackarch_easy_strap
 
       ;;
 
   "Enable read-only filesystem")
     echo "Re-enabling read-only filesystem"
-    enable_readonly_fs
+    if [ $IS_DECK == TRUE ]; then
+      enable_readonly_fs
+    else
+      echo "Not running on a Steam Deck, this likely is pointless and won't be attempted"
+    fi
       ;;
 
   "Reinitialize pacman")
@@ -158,7 +187,7 @@ case $OPTION in
       ;;
 
     *)
-      echo "wat"
+      echo "u wot m8"
         ;;
 esac
 
