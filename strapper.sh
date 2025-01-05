@@ -5,8 +5,8 @@ USER_DIR="$(getent passwd $SUDO_USER | cut -d: -f6)"
 HOMEBREW_FOLDER="${USER_DIR}/homebrew"
 
 check_is_deck() {
-  UNAME="$(uname -o)"
-  if [[ $UNAME =~ "Holo" ]]; then
+  UNAME="$(uname -a)"
+  if [[ $UNAME =~ "neptune" ]] || [[ $UNAME =~ "jupiter" ]]; then
     echo "Running on Steam Deck"
     IS_DECK=TRUE
   else
