@@ -16,26 +16,26 @@ check_is_deck() {
 }
 
 disable_readonly_fs() {
-  sudo steamos-readonly disable
+  echo "$PASS" | sudo -E -S -k "steamos-readonly disable"
 }
 
 enable_readonly_fs() {
-  sudo steamos-readonly enable
+  echo "$PASS" | sudo -E -S -k "steamos-readonly enable"
 }
 
 init_pacman() {
-  sudo pacman-key --init
-  sudo pacman-key --populate archlinux
+  echo "$PASS" | sudo -E -S -k "sudo pacman-key --init"
+  echo "$PASS" | sudo -E -S -k "pacman-key --populate archlinux"
   if [ $IS_DECK == TRUE ]; then
-    sudo pacman-key --populate holo
-    sudo steamos-devmode enable
-    sudo steamos-unminimize
+    echo "$PASS" | sudo -E -S -k "pacman-key --populate holo"
+    echo "$PASS" | sudo -E -S -k "steamos-devmode enable"
+    echo "$PASS" | sudo -E -S -k "steamos-unminimize"
   fi
-  sudo pacman --sync --noconfirm glibc linux-api-headers
+  echo "$PASS" | sudo -E -S -k "pacman --sync --noconfirm glibc linux-api-headers"
 }
 
-blackarch_easy_strap() {
-  sudo pacman-key --populate blackarch
+blackarch_strap() {
+  echo "Not yet implemented"
 }
 
 # if a password was set by decky, this will run when the program closes
@@ -114,7 +114,7 @@ main() {
 check_online
 check_jq
 check_is_deck
-#permissions_prompt
+permissions_prompt
 present_options
 case $OPTION in
   "Disable read-only filesystem")
@@ -134,7 +134,7 @@ case $OPTION in
     else
       echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
     fi
-    blackarch_easy_strap
+    blackarch_strap
       ;;
 
   "Strap BlackArch and install brew")
@@ -145,7 +145,7 @@ case $OPTION in
     else
       echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
     fi
-    blackarch_easy_strap
+    blackarch_strap
       ;;
 
   "Strap BlackArch, install brew and go")
@@ -156,7 +156,7 @@ case $OPTION in
     else
       echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
     fi
-    blackarch_easy_strap
+    blackarch_strap
 
       ;;
 
@@ -168,7 +168,7 @@ case $OPTION in
     else
       echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
     fi
-    blackarch_easy_strap
+    blackarch_strap
 
       ;;
 
