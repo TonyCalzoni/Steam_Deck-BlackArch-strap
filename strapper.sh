@@ -4,6 +4,21 @@
 USER_DIR="$(getent passwd $SUDO_USER | cut -d: -f6)"
 HOMEBREW_FOLDER="${USER_DIR}/homebrew"
 
+#untested, experimental
+install_brew() {
+  elevated_exec "sudo NONINTERACTIVE=1 /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+  echo "alias brewsome=\"eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"\"" >> ~/.bashrc
+  brewsome
+  brew --version
+  brew analytics off
+  brew install gcc cmake go
+}
+
+#untested, experimental
+install_go_and_base() {
+  elevated_exec "sudo pacman -S go base-devel git gpsd fakeroot --overwrite '*' --noconfirm"
+}
+
 elevated_exec() {
   echo "$PASS" | sudo -E -S -k "$1"
 }
@@ -141,9 +156,8 @@ present_options() {
   OPTION=$(zen_nospam --title="BlackArch Install Tool" --width=750 --height=400 --list --radiolist --text "Select Option:" --hide-header --column "Buttons" --column "Choice" --column "Info" \
   TRUE "Disable read-only filesystem" "Unlocks file-system" \
   FALSE "Strap BlackArch" "Experimental/Untested" \
-  FALSE "Strap BlackArch and install brew" "Straps BlackArch and installs brew to allow for local gcc compilation" \
-  FALSE "Strap BlackArch, install brew and go" "Straps BlackArch, installs brew, sets up go within brew" \
-  FALSE "Strap BlackArch; install brew, go, and wifi tools" "All of the above, but with aircrack and bettercap" \
+  FALSE "Strap BlackArch and install brew" "Straps BlackArch and installs brew to allow for persistent gcc compilation" \
+  FALSE "Strap BlackArch, skip brew, and install go" "Straps BlackArch, installs go and base development tools. Subject to wipe on system update" \
   FALSE "Enable read-only filesystem" "Locks file-system" \
   FALSE "Reinitialize pacman" "(Untested and experimental, for after system update)" )
 }
@@ -184,9 +198,10 @@ case $OPTION in
       echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
     fi
     blackarch_strap
+    install_brew
       ;;
 
-  "Strap BlackArch, install brew and go")
+  "Strap BlackArch, skip brew, and install go")
     echo "Strapping++"
     if [ $IS_DECK == TRUE ]; then
       disable_readonly_fs
@@ -195,19 +210,7 @@ case $OPTION in
       echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
     fi
     blackarch_strap
-
-      ;;
-
-  "Strap BlackArch; install brew, go, and wifi tools")
-    echo "Strapping+++"
-    if [ $IS_DECK == TRUE ]; then
-      disable_readonly_fs
-      init_pacman
-    else
-      echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
-    fi
-    blackarch_strap
-
+    install_go_and_base
       ;;
 
   "Enable read-only filesystem")
