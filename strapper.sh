@@ -4,6 +4,10 @@
 USER_DIR="$(getent passwd $SUDO_USER | cut -d: -f6)"
 HOMEBREW_FOLDER="${USER_DIR}/homebrew"
 
+elevated_exec() {
+  echo "$PASS" | sudo -E -S -k $1
+}
+
 #untested, experimental
 install_brew() {
   elevated_exec "sudo NONINTERACTIVE=1 /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
@@ -19,18 +23,14 @@ install_go_and_base() {
   elevated_exec "sudo pacman -S go base-devel git gpsd fakeroot --overwrite '*' --noconfirm"
 }
 
-elevated_exec() {
-  echo "$PASS" | sudo -E -S -k "$1"
-}
-
 ### Grafted from blackarch's strap.sh
 # add necessary GPG options
 add_gpg_opts()
 {
   # tmp fix for SHA-1 + >= gpg-2.4 versions
-  if ! elevated_exec "grep -q 'allow-weak-key-signatures' $GPG_CONF"
+  if ! elevated_exec "grep -q 'allow-weak-key-signatures' \$GPG_CONF"
   then
-    elevated_exec "echo 'allow-weak-key-signatures' >> $GPG_CONF"
+    elevated_exec "echo 'allow-weak-key-signatures' >> \$GPG_CONF"
   fi
 
   return $SUCCESS
@@ -40,15 +40,20 @@ add_gpg_opts()
 # retrieve the BlackArch Linux keyring
 fetch_keyring()
 {
-  elevated_exec "curl -s -O 'https://www.blackarch.org/keyring/blackarch-keyring.pkg.tar.zst'"
+  echo "Fetching keyring"
+  curl -s -O 'https://www.blackarch.org/keyring/blackarch-keyring.pkg.tar.zst'
+  echo "Keyring received"
 }
 
 ### Grafted from blackarch's strap.sh
 # install the keyring
 install_keyring()
 {
+  echo "Installing keyring"
   if ! elevated_exec "pacman --config /dev/null --noconfirm -U blackarch-keyring.pkg.tar.zst" ; then
       echo 'keyring installation failed'
+  else
+    echo "keyring installation succesful"
   fi
 
   # just in case
@@ -89,6 +94,11 @@ blackarch_strap() {
   add_gpg_opts
   fetch_keyring
   install_keyring
+  if [ $IS_DECK == TRUE ]; then
+    echo "Congratulations, BlackArch has been successfully strapped on top of your Steam Deck"
+  else
+    echo "BlackArch has been successfully strapped"
+  fi
 }
 
 # if a password was set by decky, this will run when the program closes
@@ -153,9 +163,9 @@ fi
 }
 
 present_options() {
-  OPTION=$(zen_nospam --title="BlackArch Install Tool" --width=750 --height=400 --list --radiolist --text "Select Option:" --hide-header --column "Buttons" --column "Choice" --column "Info" \
+  OPTION=$(zen_nospam --title="BlackArch Install Tool" --width=750 --height=500 --list --radiolist --text "Select Option:" --hide-header --column "Buttons" --column "Choice" --column "Info" \
   TRUE "Disable read-only filesystem" "Unlocks file-system" \
-  FALSE "Strap BlackArch" "Experimental/Untested" \
+  FALSE "Strap BlackArch" "Unlocks filesystem and straps BlackArch only, no tools or further setup is included" \
   FALSE "Strap BlackArch and install brew" "Straps BlackArch and installs brew to allow for persistent gcc compilation" \
   FALSE "Strap BlackArch, skip brew, and install go" "Straps BlackArch, installs go and base development tools. Subject to wipe on system update" \
   FALSE "Enable read-only filesystem" "Locks file-system" \
