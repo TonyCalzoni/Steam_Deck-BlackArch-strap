@@ -26,17 +26,6 @@ add_gpg_opts()
 fetch_keyring()
 {
   elevated_exec "curl -s -O 'https://www.blackarch.org/keyring/blackarch-keyring.pkg.tar.zst'"
-
-  elevated_exec "curl -s -O 'https://www.blackarch.org/keyring/blackarch-keyring.pkg.tar.zst.sig'"
-}
-
-### Grafted from blackarch's strap.sh
-# delete the signature files
-delete_signature()
-{
-  if [ -f "blackarch-keyring.pkg.tar.zst.sig" ]; then
-    elevated_exec "rm blackarch-keyring.pkg.tar.zst.sig"
-  fi
 }
 
 ### Grafted from blackarch's strap.sh
@@ -84,7 +73,6 @@ init_pacman() {
 blackarch_strap() {
   add_gpg_opts
   fetch_keyring
-  delete_signature
   install_keyring
 }
 
@@ -164,8 +152,8 @@ main() {
 check_online
 check_jq
 check_is_deck
-permissions_prompt
 present_options
+permissions_prompt
 case $OPTION in
   "Disable read-only filesystem")
     echo "Disabling read-only fs"
@@ -223,8 +211,8 @@ case $OPTION in
       ;;
 
   "Enable read-only filesystem")
-    echo "Re-enabling read-only filesystem"
     if [ $IS_DECK == TRUE ]; then
+      echo "Re-enabling read-only filesystem"
       enable_readonly_fs
     else
       echo "Not running on a Steam Deck, this likely is pointless and won't be attempted"
