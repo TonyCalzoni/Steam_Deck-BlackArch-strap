@@ -10,6 +10,7 @@ elevated_exec() {
 
 #untested, experimental
 install_brew() {
+  elevated_exec "sudo pacman -S procps-ng file --overwrite '*' --noconfirm"
   elevated_exec "sudo NONINTERACTIVE=1 /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
   echo "alias brewsome=\"eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"\"" >> ~/.bashrc
   brewsome
@@ -19,8 +20,13 @@ install_brew() {
 }
 
 #untested, experimental
-install_go_and_base() {
-  elevated_exec "sudo pacman -S go base-devel git gpsd fakeroot --overwrite '*' --noconfirm"
+install_go() {
+  elevated_exec "sudo pacman -S go --noconfirm"
+}
+
+#testing, incomplete
+add_path_export() {
+  echo "export PATH=\"\${PATH}:/home/deck/go/bin\"" >> ~/.bashrc
 }
 
 ### Grafted from blackarch's strap.sh
@@ -80,12 +86,12 @@ enable_readonly_fs() {
 }
 
 init_pacman() {
-  elevated_exec "sudo pacman-key --init"
-  elevated_exec "pacman-key --populate archlinux"
   if [ $IS_DECK == TRUE ]; then
-    elevated_exec "pacman-key --populate holo"
-    elevated_exec "steamos-devmode enable"
-    elevated_exec "steamos-unminimize"
+    elevated_exec "steamos-devmode enable --no-prompt"
+    elevated_exec "steamos-unminimize --noconfirm"
+  else
+    elevated_exec "sudo pacman-key --init"
+    elevated_exec "pacman-key --populate archlinux"
   fi
   elevated_exec "pacman --sync --noconfirm glibc linux-api-headers"
 }
@@ -220,7 +226,7 @@ case $OPTION in
       echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
     fi
     blackarch_strap
-    install_go_and_base
+    install_go
       ;;
 
   "Enable read-only filesystem")
