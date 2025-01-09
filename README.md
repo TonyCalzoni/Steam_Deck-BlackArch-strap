@@ -4,4 +4,6 @@ Dependency requirements: jq, zenity (Both are installed by default on SteamOS)
 
 WARNING: parts of this script will need to be run again after every update due to the immutable nature of Valve's SteamOS
 
-Initial testing on Steam Deck seems to work, I'll have to try again at the library soon since the wifi in my building sucks
+Initial testing on Steam Deck works. If you have wifi issues or are at the library, don't be afraid of the errors. It's network related and you can just run the script again, or execute it manually in the terminal
+
+No need to run as root or with sudo, it properly prompts and elevates as needed, and has handling in case the default deck user password is not set
