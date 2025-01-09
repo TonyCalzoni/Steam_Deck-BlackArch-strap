@@ -172,10 +172,10 @@ present_options() {
   OPTION=$(zen_nospam --title="BlackArch Install Tool" --width=750 --height=500 --list --radiolist --text "Select Option:" --hide-header --column "Buttons" --column "Choice" --column "Info" \
   TRUE "Disable read-only filesystem" "Unlocks file-system" \
   FALSE "Strap BlackArch" "Unlocks filesystem and straps BlackArch only, no tools or further setup is included" \
-  FALSE "Strap BlackArch and install brew" "Straps BlackArch and installs brew to allow for persistent gcc compilation. *Untested" \
   FALSE "Strap BlackArch, skip brew, and install go" "Straps BlackArch, installs go and base development tools. Subject to wipe on system update. *Untested" \
   FALSE "Enable read-only filesystem" "Locks file-system" \
   FALSE "Reinitialize pacman" "(Untested and experimental, for after system update)" )
+  #FALSE "Strap BlackArch and install brew" "Straps BlackArch and installs brew to allow for persistent gcc compilation. *Untested" \
 }
 
 main() {
