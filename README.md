@@ -10,3 +10,5 @@ No need to run as root or with sudo, it properly prompts and elevates as needed,
 
 Has an option to include installing Go along with bettercap and some basic tooling, like john and hashcat  
 Automatically adds /go/bin to path, and adds it to .bashrc for persistent path
+
+The built-in wifi adapter doesn't support monitor mode out of the box, and external is recommended 
