@@ -20,13 +20,21 @@ install_brew() {
 }
 
 #untested, experimental
-install_go() {
-  elevated_exec "sudo pacman -S go --noconfirm"
-}
+install_go_and_tools() {
+  #ensure deps
+  elevated_exec "pacman -S john hashcat base-devel pkgconf libpcap libnetfilter_queue go john hashcat --noconfirm"
 
-#testing, incomplete
-add_path_export() {
+  #install bettercap with go
+  go install github.com/bettercap/bettercap@latest
+
+  #set path
+  export PATH=${PATH}:/home/deck/go/bin
+  #set persistent path
   echo "export PATH=\"\${PATH}:/home/deck/go/bin\"" >> ~/.bashrc
+
+  #update caplets and ensure web ui is present
+  elevated_exec "bettercap -eval \"caplets.update; ui.update; quit\""
+
 }
 
 ### Grafted from blackarch's strap.sh
@@ -171,8 +179,8 @@ fi
 present_options() {
   OPTION=$(zen_nospam --title="BlackArch Install Tool" --width=750 --height=500 --list --radiolist --text "Select Option:" --hide-header --column "Buttons" --column "Choice" --column "Info" \
   TRUE "Disable read-only filesystem" "Unlocks file-system" \
-  FALSE "Strap BlackArch" "Unlocks filesystem and straps BlackArch only, no tools or further setup is included" \
-  FALSE "Strap BlackArch, skip brew, and install go" "Straps BlackArch, installs go and base development tools. Subject to wipe on system update. *Untested" \
+  FALSE "Strap BlackArch" "Unlocks filesystem and straps BlackArch only, no tools are included" \
+  FALSE "Strap BlackArch and install go + basic tools" "Straps BlackArch, installs go, bettercap, and basic wifi tools. Subject to wipe on system update. *Partially tested" \
   FALSE "Enable read-only filesystem" "Locks file-system" \
   FALSE "Reinitialize pacman" "(Untested and experimental, for after system update)" )
   #FALSE "Strap BlackArch and install brew" "Straps BlackArch and installs brew to allow for persistent gcc compilation. *Untested" \
@@ -217,7 +225,7 @@ case $OPTION in
     install_brew
       ;;
 
-  "Strap BlackArch, skip brew, and install go")
+  "Strap BlackArch and install go + basic tools")
     echo "Strapping++"
     if [ $IS_DECK == TRUE ]; then
       disable_readonly_fs
@@ -226,7 +234,7 @@ case $OPTION in
       echo "Not running on a Steam Deck, parts of this are likely pointless and won't be attempted"
     fi
     blackarch_strap
-    install_go
+    install_go_and_tools
       ;;
 
   "Enable read-only filesystem")
